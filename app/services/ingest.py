@@ -1,3 +1,4 @@
+from itertools import islice
 from fastembed import SparseTextEmbedding
 from langchain_community.document_loaders import PyPDFLoader
 from qdrant_client import QdrantClient
@@ -9,6 +10,11 @@ from app.core.dependencies import get_embeddings, get_qdrant, split_with_context
 from app.core.schemas import IngestResponse
 
 sparse_model = SparseTextEmbedding(model_name="qdrant/bm25")
+
+def batched(iterable, n):
+    it = iter(iterable)
+    while batch := list(islice(it, n)):
+        yield batch
 
 def ensure_collection_exists(client: QdrantClient):
     collections = client.get_collections().collections
@@ -82,10 +88,15 @@ def ingest_pdf(file_path: str) -> dict:
         for i in range(len(chunks))
     ]
 
-    client.upsert(
-        collection_name=settings.COLLECTION_NAME,
-        points=points
-    )
+    print(f"Начинаю загрузку {len(points)} точек в Qdrant...")
+
+    for batch in batched(points, 30):
+        client.upsert(
+            collection_name=settings.COLLECTION_NAME,
+            points=batch
+        )
+
+    print("Загрузка завершена успешно")
 
     return IngestResponse(
         status= "success",

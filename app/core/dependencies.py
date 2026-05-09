@@ -15,7 +15,6 @@ def get_qdrant():
         print("ВНИМАНИЕ: Qdrant client не инициализирован!")
     return state.qdrant
 
-# Вместо простого split — добавляем заголовок/контекст предыдущего чанка
 def split_with_context(documents):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.CHUNK_SIZE,
