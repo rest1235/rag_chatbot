@@ -116,9 +116,3 @@ async def clear_data():
         return {"status": "success", "message": "Collection cleared"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == '__main__':
-
-    port = int(os.getenv("PORT", 8000))
-
-    uvicorn.run("app.main:app", host=settings.APP_HOST, port=port)
